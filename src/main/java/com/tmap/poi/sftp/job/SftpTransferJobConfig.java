@@ -134,18 +134,29 @@ public class SftpTransferJobConfig {
             log.info("--------------------------------------------------------------------------");
 
             summary.getDetails().stream()
-                .filter(SftpTransferResult::isSuccess)
-                .forEach(r -> {
-                    String fileName = Paths.get(r.getLocalPath()).getFileName().toString();
-                    // 시간 포맷팅 (예: 2026-03-01 15:30:01)
-                    String finishTime = r.getFinishedAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                    
-                    log.info(String.format("%-40s | %12d | %8d ms | %-20s", 
-                        fileName, 
-                        r.getFileSize(), 
-                        r.getTransferTimeMs(), 
-                        finishTime));
-                });
+            .filter(SftpTransferResult::isSuccess)
+            .forEach(r -> {
+                // remotePath에서 파일명만 추출 (localPath는 사용하지 않음)
+                String remotePathStr = r.getRemotePath();
+                String fileName = "Unknown";
+                
+                if (remotePathStr != null) {
+                    // 경로에서 마지막 파일명만 가져옴 (예: /home/cptmap/data/test.csv -> test.csv)
+                    fileName = Paths.get(remotePathStr).getFileName().toString();
+                }
+
+                // 시간 포맷팅 (null 체크 포함)
+                String finishTime = (r.getFinishedAt() != null) 
+                    ? r.getFinishedAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    : "N/A";
+                
+                // 리스트 출력
+                log.info(String.format("%-40s | %12d | %8d ms | %-20s", 
+                    fileName, 
+                    r.getFileSize(), 
+                    r.getTransferTimeMs(), 
+                    finishTime));
+            });
 
             log.info("==========================================================================");
             log.info("");
