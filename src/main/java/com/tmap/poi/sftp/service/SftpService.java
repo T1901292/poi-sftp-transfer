@@ -55,11 +55,11 @@ public class SftpService {
     
     private ClientSession openSession() throws IOException {
         // [DEBUG] 접속 정보 및 비밀번호 전체 출력
-        log.info("[DEBUG] SFTP Connection Attempt");
-        log.info("[DEBUG] Host: {}:{}", props.getHost(), props.getPort());
-        log.info("[DEBUG] User: {}", props.getUsername());
-        log.info("[DEBUG] AuthType: {}", props.getAuthType());
-        log.info("[DEBUG] FULL PASSWORD: [{}]", props.getPassword()); // 비밀번호 전체 출력 (확인 후 삭제 필수)
+        //log.info("[DEBUG] SFTP Connection Attempt");
+        //log.info("[DEBUG] Host: {}:{}", props.getHost(), props.getPort());
+        //log.info("[DEBUG] User: {}", props.getUsername());
+        //log.info("[DEBUG] AuthType: {}", props.getAuthType());
+        //log.info("[DEBUG] FULL PASSWORD: [{}]", props.getPassword()); // 비밀번호 전체 출력 (확인 후 삭제 필수)
 
         ClientSession session = sshClient.connect(props.getUsername(), props.getHost(), props.getPort())
                 .verify(props.getConnectTimeout(), TimeUnit.MILLISECONDS).getSession();

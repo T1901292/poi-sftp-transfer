@@ -117,54 +117,51 @@ public class SftpTransferJobConfig {
         @Value("#{jobParameters['baseSdt']}")   String baseSdt) {
 
         return (contribution, chunkContext) -> {
-            // 1. 파라미터 처리
             Path localPath = Paths.get(localDir != null ? localDir : props.getLocalBaseDir());
             String remotePath = (remoteDir != null && !remoteDir.isBlank())
                 ? remoteDir
                 : props.getRemoteBaseDir() + (baseSdt != null ? "/" + baseSdt : "");
 
-            log.info("[JOB] 업로드 프로세스 시작: {} → {}", localPath, remotePath);
+            log.info("[JOB] 전송 프로세스 시작: {} → {}", localPath, remotePath);
 
-            // 2. 디렉터리 단위 업로드 실행
+            // 1. 업로드 실행
             SftpTransferResult.Summary summary = sftpService.uploadDirectory(localPath, remotePath);
 
-            // 3. [추가] 개별 파일 전송 결과 로그 출력
-            log.info("[JOB] --- 개별 파일 전송 상세 내역 ---");
-            summary.getDetails().forEach(r -> {
-                if (r.isSuccess()) {
-                    // 성공한 파일 로그 (파일명, 크기, 소요시간 등)
-                    log.info("[JOB] 전송 완료: {} ({} bytes, {}ms)", 
-                        Paths.get(r.getLocalPath()).getFileName(), r.getFileSize(), r.getTransferTimeMs());
-                } else {
-                    // 실패한 파일 로그
-                    log.error("[JOB] 전송 실패: {} | 사유: {}", 
-                        Paths.get(r.getLocalPath()).getFileName(), r.getErrorMessage());
-                }
-            });
-            log.info("[JOB] ---------------------------------");
+            // 2. [추가] 전송 파일 리스트 상세 조회 로그
+            log.info("");
+            log.info("[JOB] ================== 전송 파일 상세 리스트 ==================");
+            log.info(String.format("%-40s | %-12s | %-10s | %-20s", "파일명", "사이즈(Byte)", "소요시간", "전송완료시간"));
+            log.info("--------------------------------------------------------------------------");
 
-            // 4. 결과를 JobExecutionContext 에 저장 (리스너 활용용)
-            chunkContext.getStepContext()
-                .getStepExecution()
-                .getJobExecution()
-                .getExecutionContext()
-                .putString("transferSummary", summary.getSummaryText());
-            
-            chunkContext.getStepContext()
-                .getStepExecution()
-                .getJobExecution()
-                .getExecutionContext()
-                .putInt("failureCount", summary.getFailureCount());
+            summary.getDetails().stream()
+                .filter(SftpTransferResult::isSuccess)
+                .forEach(r -> {
+                    String fileName = Paths.get(r.getLocalPath()).getFileName().toString();
+                    // 시간 포맷팅 (예: 2026-03-01 15:30:01)
+                    String finishTime = r.getFinishedAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                    
+                    log.info(String.format("%-40s | %12d | %8d ms | %-20s", 
+                        fileName, 
+                        r.getFileSize(), 
+                        r.getTransferTimeMs(), 
+                        finishTime));
+                });
 
-            // 요약 로그 출력
-            log.info("[JOB] 최종 결과 요약: {}", summary.getSummaryText());
+            log.info("==========================================================================");
+            log.info("");
 
-            // 5. 실패 파일이 하나라도 있으면 Step 실패 처리
+            // 3. 결과 요약 및 상태 저장
+            chunkContext.getStepContext().getStepExecution().getJobExecution()
+                .getExecutionContext().putString("transferSummary", summary.getSummaryText());
+
             if (!summary.isAllSuccess()) {
-                throw new RuntimeException(
-                    String.format("SFTP 전송 일부 실패: 총 %d건 중 %d건 실패", 
-                        summary.getTotalFiles(), summary.getFailureCount())
-                );
+                // 실패한 파일이 있을 경우 별도 리스트 출력
+                log.error("[JOB] !!! 전송 실패 파일 목록 !!!");
+                summary.getDetails().stream()
+                    .filter(r -> !r.isSuccess())
+                    .forEach(r -> log.error("실패: {} (사유: {})", r.getLocalPath(), r.getErrorMessage()));
+
+                throw new RuntimeException("일부 파일 전송 실패");
             }
 
             return RepeatStatus.FINISHED;
