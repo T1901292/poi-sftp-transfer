@@ -1,4 +1,3 @@
-package com.tmap.poi;
 package com.tmap.poi.sftp.job;
 
 import com.tmap.poi.sftp.config.SftpProperties;

@@ -1,0 +1,12 @@
+com\tmap\poi\sftp\dto\SftpTransferResult$Summary$SummaryBuilder.class
+com\tmap\poi\sftp\config\SftpClientConfig.class
+com\tmap\poi\sftp\service\SftpService.class
+com\tmap\poi\sftp\dto\SftpTransferResult$SftpTransferResultBuilder.class
+com\tmap\poi\sftp\config\SftpProperties.class
+com\tmap\poi\sftp\dto\SftpTransferResult$Summary.class
+com\tmap\poi\sftp\dto\SftpTransferResult.class
+com\tmap\poi\sftp\job\SftpTransferJobConfig.class
+com\tmap\poi\sftp\exception\SftpTransferException.class
+com\tmap\poi\sftp\config\SftpProperties$Retry.class
+com\tmap\poi\sftp\SftpTransferApplication.class
+com\tmap\poi\sftp\job\SftpTransferJobConfig$1.class

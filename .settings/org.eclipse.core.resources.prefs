@@ -1,5 +1,13 @@
 eclipse.preferences.version=1
 encoding//src/main/java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/SftpTransferApplication.java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/config/SftpClientConfig.java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/config/SftpProperties.java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/dto/SftpTransferResult.java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/exception/SftpTransferException.java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/job/SftpTransferJobConfig.java=UTF-8
+encoding//src/main/java/com/tmap/poi/sftp/service/SftpService.java=UTF-8
 encoding//src/main/resources=UTF-8
+encoding//src/main/resources/application.yml=UTF-8
 encoding//src/test/java=UTF-8
 encoding/<project>=UTF-8
