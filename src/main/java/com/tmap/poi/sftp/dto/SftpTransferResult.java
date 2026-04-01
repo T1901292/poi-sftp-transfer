@@ -6,32 +6,27 @@ import java.util.List;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class SftpTransferResult {
-    private String localPath;
     private String remotePath;
     private boolean success;
-    private long fileSize;
-    private long transferTimeMs;
-    private int retryCount;
-    private LocalDateTime startedAt;
+    
+    // 기본형 long이 아닌 객체형 Long을 사용해야 null 체크가 가능합니다.
+    private Long fileSize; 
+    private Long transferTimeMs; 
+    
     private LocalDateTime finishedAt;
     private String errorMessage;
+    private String localPath;
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Summary {
         private int totalFiles;
         private int successCount;
         private int failureCount;
-        private long totalBytes;
-        private long elapsedMs;
         private List<SftpTransferResult> details;
 
-        public boolean isAllSuccess() {
-            return totalFiles > 0 && failureCount == 0;
-        }
-
         public String getSummaryText() {
-            return String.format("전송 요약: [총 %d건] 성공: %d, 실패: %d | 총 %,d bytes | %dms",
-                totalFiles, successCount, failureCount, totalBytes, elapsedMs);
+            return String.format("총 %d건 중 %d건 성공 (실패: %d)", totalFiles, successCount, failureCount);
         }
+        public boolean isAllSuccess() { return totalFiles > 0 && failureCount == 0; }
     }
 }

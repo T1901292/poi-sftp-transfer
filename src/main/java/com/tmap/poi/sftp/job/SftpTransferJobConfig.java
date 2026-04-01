@@ -42,40 +42,40 @@ public class SftpTransferJobConfig {
             @Value("#{jobParameters['remoteDir']}") String remoteDir) {
 
         return (contribution, chunkContext) -> {
-            // 경로가 파라미터로 안 오면 설정파일(props)의 기본값 사용
             Path localPath = Paths.get(localDir != null ? localDir : props.getLocalBaseDir());
             String remoteTarget = (remoteDir != null) ? remoteDir : props.getRemoteBaseDir();
 
             log.info("[JOB] 전송 시작: {} -> {}", localPath, remoteTarget);
 
-            // 전송 실행
             SftpTransferResult.Summary summary = sftpService.uploadDirectory(localPath, remoteTarget);
 
-            // 결과 리스트 출력
             log.info("\n[JOB] ================== 전송 완료 파일 리스트 ==================");
             log.info(String.format("%-40s | %-12s | %-10s", "파일명", "사이즈(Byte)", "전송시간"));
             log.info("--------------------------------------------------------------------------");
 
-            if (summary.getDetails() != null && !summary.getDetails().isEmpty()) {
+            if (summary.getDetails() != null) {
                 summary.getDetails().stream()
                     .filter(Objects::nonNull)
                     .filter(SftpTransferResult::isSuccess)
                     .forEach(r -> {
                         String fileName = (r.getRemotePath() != null) ? Paths.get(r.getRemotePath()).getFileName().toString() : "Unknown";
-                        long size = (r.getFileSize() != null) ? r.getFileSize() : 0L;
-                        long time = (r.getTransferTimeMs() != null) ? r.getTransferTimeMs() : 0L;
+                        
+                        // [에러 수정 지점] r.getFileSize()를 Object로 취급하여 안전하게 처리
+                        Object rawSize = r.getFileSize();
+                        Object rawTime = r.getTransferTimeMs();
+                        
+                        long size = (rawSize instanceof Long) ? (Long) rawSize : 0L;
+                        long time = (rawTime instanceof Long) ? (Long) rawTime : 0L;
+
                         log.info(String.format("%-40s | %12d | %8d ms", fileName, size, time));
                     });
-            } else {
-                log.info(" 전송할 파일이 없거나 전송 결과가 존재하지 않습니다.");
             }
             log.info("==========================================================================");
             log.info("[JOB] 요약: {}", summary.getSummaryText());
 
             if (!summary.isAllSuccess() && summary.getTotalFiles() > 0) {
-                throw new RuntimeException("전송 중 실패 파일이 발생했습니다.");
+                throw new RuntimeException("전송 중 일부 실패 발생");
             }
-
             return RepeatStatus.FINISHED;
         };
     }
