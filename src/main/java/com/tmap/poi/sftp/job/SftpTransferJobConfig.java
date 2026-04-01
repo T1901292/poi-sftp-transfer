@@ -117,40 +117,53 @@ public class SftpTransferJobConfig {
         @Value("#{jobParameters['baseSdt']}")   String baseSdt) {
 
         return (contribution, chunkContext) -> {
-            // 파라미터 처리
+            // 1. 파라미터 처리
             Path localPath = Paths.get(localDir != null ? localDir : props.getLocalBaseDir());
             String remotePath = (remoteDir != null && !remoteDir.isBlank())
                 ? remoteDir
                 : props.getRemoteBaseDir() + (baseSdt != null ? "/" + baseSdt : "");
 
-            log.info("[JOB] 업로드 시작: {} → {}:{}", localPath, props.getHost(), remotePath);
+            log.info("[JOB] 업로드 프로세스 시작: {} → {}", localPath, remotePath);
 
-            // 디렉터리 단위 업로드
+            // 2. 디렉터리 단위 업로드 실행
             SftpTransferResult.Summary summary = sftpService.uploadDirectory(localPath, remotePath);
 
-            // 결과를 JobExecutionContext 에 저장 (리스너에서 활용)
+            // 3. [추가] 개별 파일 전송 결과 로그 출력
+            log.info("[JOB] --- 개별 파일 전송 상세 내역 ---");
+            summary.getDetails().forEach(r -> {
+                if (r.isSuccess()) {
+                    // 성공한 파일 로그 (파일명, 크기, 소요시간 등)
+                    log.info("[JOB] 전송 완료: {} ({} bytes, {}ms)", 
+                        Paths.get(r.getLocalPath()).getFileName(), r.getFileSize(), r.getTransferTimeMs());
+                } else {
+                    // 실패한 파일 로그
+                    log.error("[JOB] 전송 실패: {} | 사유: {}", 
+                        Paths.get(r.getLocalPath()).getFileName(), r.getErrorMessage());
+                }
+            });
+            log.info("[JOB] ---------------------------------");
+
+            // 4. 결과를 JobExecutionContext 에 저장 (리스너 활용용)
             chunkContext.getStepContext()
                 .getStepExecution()
                 .getJobExecution()
                 .getExecutionContext()
                 .putString("transferSummary", summary.getSummaryText());
+            
             chunkContext.getStepContext()
                 .getStepExecution()
                 .getJobExecution()
                 .getExecutionContext()
                 .putInt("failureCount", summary.getFailureCount());
 
-            log.info("[JOB] {}", summary.getSummaryText());
+            // 요약 로그 출력
+            log.info("[JOB] 최종 결과 요약: {}", summary.getSummaryText());
 
-            // 실패 파일이 있으면 Step 실패 처리
+            // 5. 실패 파일이 하나라도 있으면 Step 실패 처리
             if (!summary.isAllSuccess()) {
-                summary.getDetails().stream()
-                    .filter(r -> !r.isSuccess())
-                    .forEach(r -> log.error("[JOB] 전송 실패: {} → {}",
-                        r.getLocalPath(), r.getErrorMessage()));
-
                 throw new RuntimeException(
-                    String.format("SFTP 전송 일부 실패: %d건", summary.getFailureCount())
+                    String.format("SFTP 전송 일부 실패: 총 %d건 중 %d건 실패", 
+                        summary.getTotalFiles(), summary.getFailureCount())
                 );
             }
 
