@@ -22,13 +22,28 @@ public class SftpService {
 
     public SftpTransferResult.Summary uploadDirectory(Path localDir, String remoteDir) {
         List<SftpTransferResult> results = new ArrayList<>();
-        try (ClientSession session = openSession(); SftpClient sftp = openSftpClient(session)) {
-            Files.walk(localDir).filter(Files::isRegularFile).forEach(file -> {
-                results.add(uploadFile(sftp, file, remoteDir));
-            });
-        } catch (IOException e) {
-            log.error("디렉토리 탐색 오류", e);
+        
+        if (!Files.exists(localDir)) {
+            log.error("로컬 디렉토리가 존재하지 않습니다: {}", localDir);
+            return SftpTransferResult.Summary.builder().totalFiles(0).details(results).build();
         }
+
+        try (ClientSession session = openSession(); SftpClient sftp = openSftpClient(session)) {
+            // 원격지 디렉토리 생성 (없으면 생성)
+            mkdirsRemote(sftp, remoteDir);
+
+            // 파일 전송
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(localDir)) {
+                for (Path file : stream) {
+                    if (Files.isRegularFile(file)) {
+                        results.add(uploadFile(sftp, file, remoteDir));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            log.error("SFTP 작업 중 오류 발생", e);
+        }
+
         return SftpTransferResult.Summary.builder()
                 .details(results).totalFiles(results.size())
                 .successCount((int)results.stream().filter(SftpTransferResult::isSuccess).count())
@@ -50,12 +65,23 @@ public class SftpService {
             return SftpTransferResult.builder().remotePath(remotePath).fileSize(Files.size(file))
                     .transferTimeMs(System.currentTimeMillis() - start).success(true).finishedAt(LocalDateTime.now()).build();
         } catch (Exception e) {
-            return SftpTransferResult.builder().remotePath(remotePath).success(false).errorMessage(e.getMessage()).localPath(file.toString()).build();
+            log.error("파일 업로드 실패: {}", file.getFileName(), e);
+            return SftpTransferResult.builder().remotePath(remotePath).success(false).errorMessage(e.getMessage()).build();
         }
     }
 
-    public boolean testConnection() {
-        try (ClientSession session = openSession()) { return session.isOpen(); } catch (Exception e) { return false; }
+    private void mkdirsRemote(SftpClient sftp, String path) throws IOException {
+        String[] folders = path.split("/");
+        StringBuilder current = new StringBuilder();
+        for (String folder : folders) {
+            if (folder.isEmpty()) continue;
+            current.append("/").append(folder);
+            try {
+                sftp.stat(current.toString());
+            } catch (IOException e) {
+                sftp.mkdir(current.toString());
+            }
+        }
     }
 
     private ClientSession openSession() throws IOException {
