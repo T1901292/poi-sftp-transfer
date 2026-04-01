@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: poi-sftp-transfer
+  batch:
+    job:
+      enabled: false          # 자동실행 방지 (수동 트리거 또는 Jenkins 실행)
+    initialize-schema: always
+
+  datasource:
+    url: jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${DB_HOST:localhost})(PORT=${DB_PORT:1521}))(CONNECT_DATA=(SERVICE_NAME=${DB_SERVICE:POIREAL})))
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: oracle.jdbc.OracleDriver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+
+# ──────────────────────────────────────────
+# SFTP 접속 정보
+# sftp -P 40022 cptmap@223.39.122.217
+# ──────────────────────────────────────────
+sftp:
+  host: 223.39.122.217
+  port: 40022
+  username: cptmap
+  # 인증 방식: password | privateKey (둘 중 하나만 활성화)
+  auth-type: password              # or: privateKey
+
+  # 비밀번호 인증 ${SFTP_PASSWORD:}
+  password: New1234!
+  
+
+  # 개인키 인증 (auth-type: privateKey 일 때)
+  private-key-path: C:\\Users\\joy/.ssh/id_rsa
+  private-key-passphrase: ${SFTP_KEY_PASS:}
+
+  # 접속 옵션
+  connect-timeout: 30000           # ms
+  session-heartbeat: 60            # seconds (서버 keepalive)
+  strict-host-key-checking: false  # known_hosts 검증 여부
+
+  # 전송 경로
+  remote-base-dir: /home/cptmap/data
+  local-base-dir: /data/poi/export
+
+  # 재시도
+  retry:
+    max-attempts: 3
+    backoff-delay: 5000            # ms
+
+# 로깅
+logging:
+  level:
+    com.tmap.poi.sftp: DEBUG
+    org.apache.sshd: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
