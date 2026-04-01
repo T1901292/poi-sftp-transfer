@@ -121,21 +121,27 @@ public class SftpTransferJobConfig {
 
             log.info("[JOB] 전송 프로세스 시작: {} -> {}", localPath, remotePath);
 
+         // SftpTransferJobConfig.java 내부 sftpUploadTasklet 람다 로직
             SftpTransferResult.Summary summary = sftpService.uploadDirectory(localPath, remotePath);
 
-            // 리스트 출력 부분 개선
             log.info("");
-            log.info("[UPLOAD RESULT] -----------------------------------------------------------");
-            log.info(String.format("%-40s | %-12s | %-10s | %-20s", "전송 파일명", "사이즈(B)", "소요시간", "완료시각"));
-            log.info("---------------------------------------------------------------------------");
+            log.info("[JOB] ================== 전송 완료 파일 리스트 ==================");
+            log.info(String.format("%-40s | %-12s | %-10s", "파일명", "사이즈(Byte)", "전송시간"));
+            log.info("--------------------------------------------------------------------------");
 
-            summary.getDetails().stream().filter(SftpTransferResult::isSuccess).forEach(r -> {
-                String fileName = (r.getRemotePath() != null) ? Paths.get(r.getRemotePath()).getFileName().toString() : "Unknown";
-                String finishTime = (r.getFinishedAt() != null) ? r.getFinishedAt().format(TIME_FORMATTER) : "N/A";
-                log.info(String.format("%-40s | %12d | %8d ms | %-20s", fileName, r.getFileSize(), r.getTransferTimeMs(), finishTime));
-            });
-            log.info("---------------------------------------------------------------------------");
-
+            summary.getDetails().stream()
+                .filter(SftpTransferResult::isSuccess)
+                .forEach(r -> {
+                    // remotePath에서 파일명만 안전하게 추출
+                    String fileName = (r.getRemotePath() != null) 
+                        ? Paths.get(r.getRemotePath()).getFileName().toString() 
+                        : "Unknown";
+                        
+                    log.info(String.format("%-40s | %12d | %8d ms", 
+                        fileName, r.getFileSize(), r.getTransferTimeMs()));
+                });
+            log.info("==========================================================================");
+            log.info("[JOB] 요약: {}", summary.getSummaryText());
             // Summary 저장
             chunkContext.getStepContext().getStepExecution().getJobExecution()
                 .getExecutionContext().putString("transferSummary", summary.getSummaryText());
