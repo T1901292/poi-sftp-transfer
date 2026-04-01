@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.skmnc.ndds.ndds-batch</groupId>
+    <artifactId>infra-jdx-batch</artifactId>
+    <version>2.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>infra-jdx-batch</name>
+    <description>Automated POI Batch (Standalone / Spring 5 + Batch 4 + Java 17)</description>
+
+    <properties>
+        <batch.domain.name>infra-batch</batch.domain.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <spring.framework.version>5.3.39</spring.framework.version>
+        <spring.batch.version>4.3.10</spring.batch.version>
+        <mina-sshd.version>2.16.0</mina-sshd.version> <bouncycastle.version>1.70</bouncycastle.version>
+
+        <com.skmnc.ndds.poi.jar>5.8.3</com.skmnc.ndds.poi.jar>
+        <ndds.frame.version>1.4.6</ndds.frame.version>
+
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-net.version>3.11.1</commons-net.version>
+        <commons-io.version>2.21.0</commons-io.version>
+        <commons-codec.version>1.17.1</commons-codec.version>
+        <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
+        <commons-text.version>1.12.0</commons-text.version>
+
+        <logback.version>1.4.14</logback.version>
+        <slf4j.version>2.0.9</slf4j.version>
+        <log4j.version>2.23.1</log4j.version>
+
+        <jackson.version>2.17.2</jackson.version>
+        <gson.version>2.11.0</gson.version>
+        <xstream.version>1.4.20</xstream.version>
+        <dom4j.version>2.1.4</dom4j.version>
+
+        <mybatis.version>3.5.16</mybatis.version>
+        <mybatis-spring.version>2.1.2</mybatis-spring.version>
+        <hibernate.version>5.6.15.Final</hibernate.version>
+        <hsqldb.version>2.7.3</hsqldb.version>
+        <h2.version>2.3.232</h2.version>
+        <ojdbc.version>23.5.0.24.07</ojdbc.version> 
+
+        <httpclient.version>4.5.14</httpclient.version>
+        <httpcore.version>4.4.16</httpcore.version>
+
+        <junit.version>4.13.2</junit.version>
+        <janino.version>3.1.12</janino.version>
+        <ant.version>1.10.15</ant.version>
+        <jettison.version>1.5.4</jettison.version>
+        <p6spy.version>3.9.1</p6spy.version>
+
+        <maven-plugin.compiler.version>3.13.0</maven-plugin.compiler.version>
+        <maven-plugin.dependency.version>3.8.1</maven-plugin.dependency.version>
+        <maven-plugin.jar.version>3.4.2</maven-plugin.jar.version>
+        <maven-plugin.resources.version>3.3.1</maven-plugin.resources.version>
+        <maven-plugin.exec.version>3.5.0</maven-plugin.exec.version>
+        <maven-plugin.javadoc.version>3.10.1</maven-plugin.javadoc.version>
+
+        <spotbugs.plugin.version>4.9.8.0</spotbugs.plugin.version>
+        <jackcess.version>4.0.7</jackcess.version>
+        <javadbf.version>1.14.1</javadbf.version>
+        <tomcat.version>11.0.14</tomcat.version>
+
+        <basedir>C:/work/ndds/workspace/poi-infra-jdx</basedir>
+    </properties>
+
+    <build>
+        <finalName>infra-jdx-batch</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.plugin.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-plugin.compiler.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-plugin.resources.version}</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>osgeo</id>
+            <name>OSGeo Release Repository</name>
+            <url>https://repo.osgeo.org/repository/release/</url>
+            <snapshots><enabled>false</enabled></snapshots>
+            <releases><enabled>true</enabled></releases>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-annotations-api</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>20040616</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-annotations-api</artifactId>
+            <version>${tomcat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.framework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.framework.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+            <version>${spring.batch.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-core</artifactId>
+            <version>${mina-sshd.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-sftp</artifactId>
+            <version>${mina-sshd.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sshd</groupId>
+            <artifactId>sshd-common</artifactId>
+            <version>${mina-sshd.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <version>${ojdbc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>${mybatis.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis-spring</artifactId>
+            <version>${mybatis-spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.7.18</version> <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-test</artifactId>
+            <version>${spring.batch.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>ndds-local</id>
+            <properties>
+                <batch.server.ip>localhost</batch.server.ip>
+                <batch.home.dir>C:/data/batch/infra-jdx/test</batch.home.dir>
+                <batch.shell.type>bat</batch.shell.type>
+                <batch.skip.log.path>C:/data/batch/infra-jdx/logs</batch.skip.log.path>
+                <batch.data.dir>C:/data/batch/infra-jdx/data</batch.data.dir>
+                <new.data.dir>C:/data/test</new.data.dir>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>${maven-plugin.dependency.version}</version>
+                        <executions>
+                            <execution>
+                                <id>copy-dependencies-package</id>
+                                <phase>package</phase>
+                                <goals><goal>copy-dependencies</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${batch.home.dir}/lib</outputDirectory>
+                                    <excludeTypes>pom</excludeTypes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>${maven-plugin.resources.version}</version>
+                        <executions>
+                            <execution>
+                                <id>package-copy-files</id>
+                                <phase>package</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${batch.home.dir}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/main/resources</directory>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        </profiles>
+</project>

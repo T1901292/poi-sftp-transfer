@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  batch:
+    initialize-schema: always
+    job:
+      enabled: false
+
+sftp:
+  host: 223.39.122.217
+  port: 40022
+  username: cptmap
+  auth-type: password
+  password: ${SFTP_PASSWORD:}
+  strict-host-key-checking: false
+  connect-timeout: 10000
+  remote-base-dir: /home/cptmap/data
+  local-base-dir: /tmp/poi/test
+
+logging:
+  level:
+    com.tmap.poi.sftp: DEBUG
+    org.apache.sshd: WARN
