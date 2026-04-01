@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.skmnc.ndds.ndds-batch</groupId>
-    <artifactId>infra-jdx-batch</artifactId>
+    <artifactId>poi-sftp-transfer</artifactId>
     <version>2.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>infra-jdx-batch</name>
+    <name>poi-sftp-transfer</name>
     <description>Automated POI Batch (Standalone / Spring 5 + Batch 4 + Java 17)</description>
 
     <properties>
-        <batch.domain.name>infra-batch</batch.domain.name>
+        <batch.domain.name>poi-sftp-transfer</batch.domain.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -72,11 +72,11 @@
         <javadbf.version>1.14.1</javadbf.version>
         <tomcat.version>11.0.14</tomcat.version>
 
-        <basedir>C:/work/ndds/workspace/poi-infra-jdx</basedir>
+        <basedir>C:/work/ndds/git/poi-sftp-transfer</basedir>
     </properties>
 
     <build>
-        <finalName>infra-jdx-batch</finalName>
+        <finalName>poi-sftp-transfer</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -305,14 +305,14 @@
 
     <profiles>
         <profile>
-            <id>ndds-local</id>
+            <id>ndds-real</id>
             <properties>
                 <batch.server.ip>localhost</batch.server.ip>
-                <batch.home.dir>C:/data/batch/infra-jdx/test</batch.home.dir>
-                <batch.shell.type>bat</batch.shell.type>
-                <batch.skip.log.path>C:/data/batch/infra-jdx/logs</batch.skip.log.path>
-                <batch.data.dir>C:/data/batch/infra-jdx/data</batch.data.dir>
-                <new.data.dir>C:/data/test</new.data.dir>
+                <batch.home.dir>/data/batch/poi-sftp-transfer/real</batch.home.dir>
+                <batch.shell.type>sh</batch.shell.type>
+                <batch.skip.log.path>/data/batch/poi-sftp-transfer/logs</batch.skip.log.path>
+                <batch.data.dir>/data/batch/poi-sftp-transfer/data</batch.data.dir>
+                <new.data.dir>/data/test</new.data.dir>
             </properties>
             <build>
                 <plugins>
