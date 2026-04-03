@@ -1,7 +1,10 @@
 package com.tmap.poi.sftp;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -16,37 +19,40 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:application.properties")
 public class SftpTransferApplication {
 
-    public static void main(String[] args) {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SftpTransferApplication.class)) {
-            
-            // 1. 실행할 Job 이름 결정 (전달받은 아규먼트 우선, 없으면 기본값)
-            String jobName = getArg(args, "spring.batch.job.names");
-            if (jobName == null || jobName.isEmpty()) {
-                jobName = "sftpTransferJob"; // 기본 Job
-            }
-            
-            log.info("[MAIN] 실행할 Job 이름: {}", jobName);
+    public static void main(String[] args) {    	
+    	    // try-with-resources로 컨텍스트 관리
+    	    try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(SftpTransferApplication.class)) {
+    	        
+    	        String jobName = getArg(args, "spring.batch.job.names");
+    	        if (jobName == null) jobName = "sftpTransferJob";
 
-            // 2. 이름으로 특정 Job Bean 가져오기 (NoUniqueBeanDefinitionException 방지)
-            JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-            Job job = context.getBean(jobName, Job.class); 
+    	        JobLauncher jobLauncher = context.getBean(JobLauncher.class);
+    	        Job job = context.getBean(jobName, Job.class);
 
-            // 3. 파라미터 구성
-            JobParameters params = new JobParametersBuilder()
-                    .addString("localDir", getArg(args, "localDir"))
-                    .addString("remoteDir", getArg(args, "remoteDir"))
-                    .addString("baseSdt", getArg(args, "baseSdt"))
-                    .addLong("runTime", System.currentTimeMillis())
-                    .toJobParameters();
+    	        JobParameters params = new JobParametersBuilder()
+    	                .addString("localDir", getArg(args, "localDir"))
+    	                .addString("remoteDir", getArg(args, "remoteDir"))
+    	                .addLong("time", System.currentTimeMillis())
+    	                .toJobParameters();
 
-            // 4. 실행
-            jobLauncher.run(job, params);
-            
-        } catch (Exception e) {
-            log.error("[MAIN] 치명적 오류 발생", e);
-            System.exit(1);
-        }
-    }
+    	        // 1. Job 실행 및 결과 수신
+    	        JobExecution execution = jobLauncher.run(job, params);
+
+    	        // 2. 실행 상태 확인 (가장 중요)
+    	        if (execution.getStatus() != BatchStatus.COMPLETED) {
+    	            log.error("[MAIN] Job 실행 실패! 최종 상태: {}", execution.getStatus());
+    	            // 젠킨스에게 실패를 알리기 위해 0이 아닌 종료 코드 반환
+    	            System.exit(1); 
+    	        } else {
+    	            log.info("[MAIN] Job 실행 완료");
+    	            System.exit(0);
+    	        }
+
+    	    } catch (Exception e) {
+    	        log.error("[MAIN] 실행 중 예외 발생", e);
+    	        System.exit(1); // 예외 발생 시 실패 처리
+    	    }
+    	}
 
     /**
      * --key=value 형태의 인자 추출

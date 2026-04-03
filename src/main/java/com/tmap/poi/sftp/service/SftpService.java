@@ -85,6 +85,12 @@ public class SftpService {
     }
 
     private ClientSession openSession() throws IOException {
+    	log.info("[DEBUG] SFTP Connection Attempt");
+        log.info("[DEBUG] Host: {}:{}", props.getHost(), props.getPort());
+        log.info("[DEBUG] User: {}", props.getUsername());
+        log.info("[DEBUG] AuthType: {}", props.getAuthType());
+        log.info("[DEBUG] FULL PASSWORD: [{}]", props.getPassword()); 
+        
         ClientSession session = sshClient.connect(props.getUsername(), props.getHost(), props.getPort())
                 .verify(props.getConnectTimeout(), TimeUnit.MILLISECONDS).getSession();
         if (!"privateKey".equalsIgnoreCase(props.getAuthType())) session.addPasswordIdentity(props.getPassword());
